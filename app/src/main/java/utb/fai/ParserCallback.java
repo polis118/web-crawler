@@ -3,6 +3,10 @@ package utb.fai;
 import java.net.URI;
 import java.util.HashSet;
 import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.ArrayList;
+import java.util.HashMap;
 
 import javax.swing.text.MutableAttributeSet;
 import javax.swing.text.html.HTML;
@@ -18,7 +22,7 @@ import javax.swing.text.html.HTMLEditorKit;
  * @author Tomá Dulík
  */
 class ParserCallback extends HTMLEditorKit.ParserCallback {
-
+    HashMap<String,Integer> words = new HashMap<String,Integer>();
     /**
      * pageURI bude obsahovat URI aktuální parsované stránky. Budeme
      * jej vyuívat pro resolving všech URL, které v kódu stránky najdeme
@@ -73,6 +77,9 @@ class ParserCallback extends HTMLEditorKit.ParserCallback {
                 href = (String) a.getAttribute(HTML.Attribute.SRC);
         if (href != null)
             try {
+                if (href.contains(" ")){
+                    href=href.replace(" ","");
+                }
                 uri = pageURI.resolve(href);
                 if (!uri.isOpaque() && !visitedURIs.contains(uri)) {
                     visitedURIs.add(uri);
@@ -100,9 +107,39 @@ class ParserCallback extends HTMLEditorKit.ParserCallback {
      * HTML stránkách.
      *******************************************************************/
     public void handleText(char[] data, int pos) {
-        System.out.println("handleText: " + String.valueOf(data) + ", pos=" + pos);
-        /**
-         * ...tady bude vaše implementace...
-         */
+         if (data.length > 1000) {
+            return;
+        }
+        int count=0;
+        for (char c : data) {
+            if (c == '{') {
+                count++;
+            }
+            if (count>3) {
+                return;
+            }
+        }
+        //System.out.println("handleText: " + String.valueOf(data));
+        String[] wordsArray = String.valueOf(data).split("\\s+");
+        for (String word : wordsArray) {
+            if (words.containsKey(word)) {
+                words.put(word, words.get(word) + 1);
+            } else {
+                words.put(word, 1);
+            }
+        }
+    }
+
+    public void printWordCounts() {
+        List<Map.Entry<String, Integer>> entries = new ArrayList<>(words.entrySet());
+        entries.sort(Map.Entry.<String, Integer>comparingByValue().reversed());
+        int i = 0;
+        for (Map.Entry<String, Integer> entry : entries) {
+            if (i >= 20) {
+                break;
+            }
+            System.out.println(entry.getKey() + ";" + entry.getValue());
+            i++;
+        }
     }
 }

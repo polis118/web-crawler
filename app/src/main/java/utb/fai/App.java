@@ -37,9 +37,9 @@ public class App {
 			while (!foundURIs.isEmpty()) {
 				URIinfo URIinfo = foundURIs.removeFirst();
 				callBack.depth = URIinfo.depth;
-				if (callBack.depth > maxDepth) {
-					continue;
-				}
+				// if (callBack.depth > maxDepth) {
+				// 	continue;
+				// }
 				callBack.pageURI = uri = URIinfo.uri;
 				System.err.println("Analyzing " + uri);
 				try {
